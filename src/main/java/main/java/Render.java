@@ -11,6 +11,7 @@ public class Render extends PApplet {
     public Tile[][] matrix;
     public Pathfinder pathfinder;
     private boolean showFps = false;
+    private ArrayList<Tile> oldExplored = new ArrayList<>();
 
     @Override
     public void settings() {
@@ -40,6 +41,7 @@ public class Render extends PApplet {
             resetPathfinder();
         } else if (key == 'f') {
             showFps = !showFps;
+            drawMatrix(pathfinder.currentExplored,pathfinder.startTile,pathfinder.endTile,pathfinder.finalised,pathfinder.failed);
         } else if (keyCode == UP) {
             frameRate(frameRate + 5);
         } else if (keyCode == DOWN) {
@@ -51,16 +53,42 @@ public class Render extends PApplet {
     public void draw() {
         if (!pathfinder.finalised) {
             pathfinder.step();
-            drawMatrix(pathfinder.currentExplored,pathfinder.startTile,pathfinder.endTile,false,pathfinder.failed);
+            ArrayList<Tile> filteredTravel = (ArrayList<Tile>) pathfinder.currentExplored.clone();
+            filteredTravel.remove(pathfinder.startTile);
+            filteredTravel.removeAll(oldExplored);
+            drawChanges(filteredTravel);
         } else {
-            drawMatrix(pathfinder.foundPath,pathfinder.startTile,pathfinder.endTile,true,false);
+            drawMatrix(pathfinder.foundPath, pathfinder.startTile, pathfinder.endTile, true, false);
+        }
+
+        if (pathfinder.failed) {
+            drawMatrix(pathfinder.currentExplored, pathfinder.startTile, pathfinder.endTile, false, true);
         }
 
         if (showFps) {
+            fill(255);
+            stroke(0);
+            rect(0,0,100,100);
+
             fill(0,255,0);
             text(frameRate,10,30);
             text(frameCount,15,60);
             text(frameCount / frameRate,10,90);
+        }
+
+        oldExplored = (ArrayList<Tile>) pathfinder.currentExplored.clone();
+    }
+
+    private void drawChanges(ArrayList<Tile> traveled) {
+
+        int sizeX = width / matrix[0].length;
+        int sizeY = height / matrix.length;
+
+        fill(255, 180, 20);
+        stroke(255, 180, 20);
+
+        for (Tile tile : traveled) {
+            rect(tile.y() * sizeX, tile.x() * sizeY, sizeX, sizeY);
         }
     }
 
@@ -144,6 +172,8 @@ public class Render extends PApplet {
 
         pathfinder = new Pathfinder(matrix);
         pathfinder.pathfind(startX,startY,endX,endY);
+
+        drawMatrix(pathfinder.currentExplored, pathfinder.startTile, pathfinder.endTile, false, pathfinder.failed);
     }
 
     private void resetImage() {
