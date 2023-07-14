@@ -1,8 +1,11 @@
 package main.java;
 
+import org.bouncycastle.asn1.cms.Time;
 import processing.core.PApplet;
 import processing.core.PImage;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 
 public class Render extends PApplet {
@@ -12,6 +15,7 @@ public class Render extends PApplet {
     public Pathfinder pathfinder;
     private boolean showFps = false;
     private ArrayList<Tile> oldExplored = new ArrayList<>();
+    private long startTime = System.currentTimeMillis();
 
     @Override
     public void settings() {
@@ -68,12 +72,12 @@ public class Render extends PApplet {
         if (showFps) {
             fill(255);
             stroke(0);
-            rect(0,0,100,100);
+            rect(0,0,180,100);
 
             fill(0,255,0);
-            text(frameRate,10,30);
-            text(frameCount,15,60);
-            text(frameCount / frameRate,10,90);
+            text(frameRate + " FPS",10,30);
+            text(frameCount + " FCount",10,60);
+            text((float)frameCount / ((System.currentTimeMillis() - startTime) / 1000f) + " AVG FPS",10,90);
         }
 
         oldExplored = (ArrayList<Tile>) pathfinder.currentExplored.clone();
